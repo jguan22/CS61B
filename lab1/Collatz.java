@@ -8,8 +8,10 @@ public class Collatz {
         if (n == 1) {
             return 1;
         } else if (n % 2 == 1) {
+            /** if the number is odd, do 3n+1 */
             return 3 * n + 1;
         } else {
+            /** if the number is even, do n/2 */
             return n / 2;
         }
     }
