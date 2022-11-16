@@ -21,7 +21,7 @@ public class SquarePrimesTest {
     /** test for the SquarePrime. */
     @Test
     public void testSquarePrimes() {
-        IntList lst = IntList.of(1, 2, 3, 17, 97, 100);
+        IntList lst = IntList.of(1, 2, 3, 4, 97, 100);
         boolean changed = IntListExercises.squarePrimes(lst);
         assertEquals("1 -> 4 -> 9 -> 289 -> 9409 -> 100", lst.toString());
         assertTrue(changed);
