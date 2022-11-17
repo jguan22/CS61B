@@ -56,7 +56,7 @@ public class ArrayDeque<Item> {
         if (nextLast == items.length - 1) {
             nextLast = 0;
         } else {
-            nextFirst++;
+            nextLast++;
         }
     }
 
@@ -81,6 +81,10 @@ public class ArrayDeque<Item> {
     }
 
     public Item removeFirst() {
+        if (size == 0) {
+            return null;
+        }
+
         int index = getIndex(0);
         Item item = items[index];
 
@@ -94,6 +98,10 @@ public class ArrayDeque<Item> {
     }
 
     public Item removeLast() {
+        if (size == 0) {
+            return null;
+        }
+
         int index = getIndex(size - 1);
         Item item = items[index];
 
@@ -113,8 +121,8 @@ public class ArrayDeque<Item> {
 
     public int getIndex(int index) {
         int i = nextFirst + 1 + index;
-        if (i > size - 1) {
-            i = i - size;
+        if (i > items.length - 1) {
+            i = i - items.length;
         }
         return i;
     }
