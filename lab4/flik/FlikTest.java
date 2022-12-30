@@ -11,7 +11,6 @@ public class FlikTest {
         int j = 127;
         assertTrue(Flik.isSameNumber(i, j));
     }
-
     @Test
     public void flikTest128() {
         int i = 128;
