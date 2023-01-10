@@ -36,10 +36,7 @@ public class LinkedListDeque<T> {
     }
 
     public boolean isEmpty() {
-        if (size == 0) {
-            return true;
-        }
-        return false;
+        return size == 0;
     }
 
     public int size(){
@@ -93,12 +90,12 @@ public class LinkedListDeque<T> {
     }
 
     public T getRecursive(int index) {
-        /** Check if the index is valid */
+        /* Check if the index is valid */
         if (index > size - 1 || index < 0) {
             return null;
         }
 
-        /** Call recursive get function */
+        /* Call recursive get function */
         int i = 0;
         Node indexNode = sentinel.next;
         T item = getRecursiveHelper(index, i, indexNode);

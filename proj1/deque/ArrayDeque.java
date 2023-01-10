@@ -1,7 +1,5 @@
 package deque;
 
-import net.sf.saxon.expr.instruct.ITemplateCall;
-
 public class ArrayDeque<Item> {
     private Item[] items;
     private int size;
@@ -61,10 +59,7 @@ public class ArrayDeque<Item> {
     }
 
     public boolean isEmpty() {
-        if (size == 0) {
-            return true;
-        }
-        return false;
+        return size == 0;
     }
 
     public int size() {
