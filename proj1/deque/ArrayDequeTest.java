@@ -76,7 +76,7 @@ public class ArrayDequeTest {
     }
 
     @Test
-    /** Check if you can create ArrayDeques with different parameterized types */
+    /** Check if you can create ArrayDeque with different parameterized types */
     public void multipleParamTest() {
 
         ArrayDeque<String> array1 = new ArrayDeque<String>();
