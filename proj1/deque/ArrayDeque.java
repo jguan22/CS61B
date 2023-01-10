@@ -1,7 +1,5 @@
 package deque;
 
-import net.sf.saxon.expr.instruct.ITemplateCall;
-
 public class ArrayDeque<Item> {
     private Item[] items;
     private int size;
