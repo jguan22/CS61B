@@ -193,6 +193,5 @@ public class LinkedListDeque<T> implements Deque<T> {
         System.out.println(LinkedListDeque.equals(null));
         System.out.println(LinkedListDeque.equals("fish"));
         System.out.println(LinkedListDeque2.equals(LinkedListDeque2));
-
     }
 }
