@@ -3,21 +3,21 @@ package deque;
 import java.util.Iterator;
 
 
-public class ArrayDeque<Item> implements Deque<Item> {
-    private Item[] items;
+public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
+    private T[] items;
     private int size;
     private int nextFirst;
     private int nextLast;
 
     public ArrayDeque() {
-        items = (Item []) new Object[8];
+        items = (T[]) new Object[8];
         nextFirst = 0;
         nextLast = 1;
         size = 0;
     }
 
     private void resize(int capacity) {
-        Item[] temp = (Item []) new Object[capacity];
+        T[] temp = (T[]) new Object[capacity];
         for (int i = 0; i < size; i++) {
             int index = getIndex(i);
             temp[i] = items[index];
@@ -27,7 +27,7 @@ public class ArrayDeque<Item> implements Deque<Item> {
         nextLast = size;
     }
 
-    public void checkSize() {
+    private void checkSize() {
         if (size == items.length) {
             resize(size * 2);
         } else if (size < items.length / 4 && items.length > 8) {
@@ -35,7 +35,7 @@ public class ArrayDeque<Item> implements Deque<Item> {
         }
     }
 
-    public void addFirst(Item item) {
+    public void addFirst(T item) {
         checkSize();
 
         items[nextFirst] = item;
@@ -48,7 +48,7 @@ public class ArrayDeque<Item> implements Deque<Item> {
         }
     }
 
-    public void addLast(Item item) {
+    public void addLast(T item) {
         checkSize();
 
         items[nextLast] = item;
@@ -74,13 +74,13 @@ public class ArrayDeque<Item> implements Deque<Item> {
         System.out.println();
     }
 
-    public Item removeFirst() {
+    public T removeFirst() {
         if (size == 0) {
             return null;
         }
 
         int index = getIndex(0);
-        Item item = items[index];
+        T item = items[index];
 
         items[index] = null;
         nextFirst = index;
@@ -91,13 +91,13 @@ public class ArrayDeque<Item> implements Deque<Item> {
         return item;
     }
 
-    public Item removeLast() {
+    public T removeLast() {
         if (size == 0) {
             return null;
         }
 
         int index = getIndex(size - 1);
-        Item item = items[index];
+        T item = items[index];
 
         items[index] = null;
         nextLast = index;
@@ -108,12 +108,12 @@ public class ArrayDeque<Item> implements Deque<Item> {
         return item;
     }
 
-    public Item get(int index) {
+    public T get(int index) {
         int i = getIndex(index);
         return items[i];
     }
 
-    public int getIndex(int index) {
+    private int getIndex(int index) {
         int i = nextFirst + 1 + index;
         if (i > items.length - 1) {
             i = i - items.length;
@@ -121,19 +121,19 @@ public class ArrayDeque<Item> implements Deque<Item> {
         return i;
     }
 
-    public Iterator<Item> iterator() {
+    public Iterator<T> iterator() {
         return new ArrayDequeIterator();
     }
 
-    public void printDequeIterator() {
-        Iterator<Item> seer = iterator();
+    private void printDequeIterator() {
+        Iterator<T> seer = iterator();
 
         while (seer.hasNext()) {
             System.out.println(seer.next());
         }
     }
 
-    public class ArrayDequeIterator implements Iterator<Item> {
+    private class ArrayDequeIterator implements Iterator<T> {
         private int wizPos;
 
         public ArrayDequeIterator() {
@@ -144,8 +144,8 @@ public class ArrayDeque<Item> implements Deque<Item> {
             return wizPos < size;
         }
 
-        public Item next() {
-            Item returnItem = items[wizPos];
+        public T next() {
+            T returnItem = items[wizPos];
             wizPos += 1;
             return returnItem;
         }
@@ -163,7 +163,7 @@ public class ArrayDeque<Item> implements Deque<Item> {
             return false;
         }
 
-        ArrayDeque<Item> other = (ArrayDeque<Item>) o;
+        ArrayDeque<T> other = (ArrayDeque<T>) o;
         if (this.size != other.size) {
             return false;
         }
@@ -177,7 +177,7 @@ public class ArrayDeque<Item> implements Deque<Item> {
         return true;
     }
 
-    public static void main(String[] args) {
+    private static void main(String[] args) {
         ArrayDeque<Integer> arrayDeque = new ArrayDeque<>();
         arrayDeque.addFirst(5);
         arrayDeque.addLast(23);
