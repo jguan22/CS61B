@@ -1,6 +1,8 @@
 package deque;
 
-public class ArrayDeque<Item> {
+import java.util.Iterator;
+
+public class ArrayDeque<Item> implements Deque<Item> {
     private Item[] items;
     private int size;
     private int nextFirst;
@@ -56,10 +58,6 @@ public class ArrayDeque<Item> {
         } else {
             nextLast++;
         }
-    }
-
-    public boolean isEmpty() {
-        return size == 0;
     }
 
     public int size() {
@@ -120,6 +118,91 @@ public class ArrayDeque<Item> {
             i = i - items.length;
         }
         return i;
+    }
+
+    public Iterator<Item> iterator() {
+        return new ArrayDequeIterator();
+    }
+
+    public void printDequeIterator() {
+        Iterator<Item> seer = iterator();
+
+        while (seer.hasNext()) {
+            System.out.println(seer.next());
+        }
+    }
+
+    public class ArrayDequeIterator implements Iterator<Item> {
+        private int wizPos;
+
+        public ArrayDequeIterator() {
+            wizPos = 0;
+        }
+
+        public boolean hasNext() {
+            return wizPos < size;
+        }
+
+        public Item next() {
+            Item returnItem = items[wizPos];
+            wizPos += 1;
+            return returnItem;
+        }
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+
+        if (!(o instanceof ArrayDeque)) {
+            return false;
+        }
+
+        ArrayDeque<Item> other = (ArrayDeque<Item>) o;
+        if (this.size != other.size) {
+            return false;
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (!(other.get(i).equals(this.get(i)))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static void main(String[] args) {
+        ArrayDeque<Integer> arrayDeque = new ArrayDeque<>();
+        arrayDeque.addFirst(5);
+        arrayDeque.addLast(23);
+        arrayDeque.addFirst(42);
+        arrayDeque.addLast(7);
+
+
+        //* toString
+        System.out.println(arrayDeque);
+
+        arrayDeque.printDeque();
+
+        arrayDeque.printDequeIterator();
+
+        //equals
+        ArrayDeque<Integer> arrayDeque2 = new ArrayDeque<>();
+        arrayDeque2.addFirst(5);
+        arrayDeque2.addLast(23);
+        arrayDeque2.addFirst(42);
+        arrayDeque2.addLast(7);
+
+        System.out.println(arrayDeque.equals(arrayDeque2));
+        System.out.println(arrayDeque.equals(null));
+        System.out.println(arrayDeque.equals("fish"));
+        System.out.println(arrayDeque.equals(arrayDeque));
+
     }
 
 }

@@ -1,6 +1,8 @@
 package deque;
 
-public class LinkedListDeque<T> {
+import java.util.Iterator;
+
+public class LinkedListDeque<T> implements Deque<T> {
     private class Node {
         private Node prev;
         private T item;
@@ -33,10 +35,6 @@ public class LinkedListDeque<T> {
         sentinel.prev = new Node(sentinel.prev, item, sentinel);
         sentinel.prev.prev.next = sentinel.prev;
         size++;
-    }
-
-    public boolean isEmpty() {
-        return size == 0;
     }
 
     public int size(){
@@ -111,5 +109,90 @@ public class LinkedListDeque<T> {
         i++;
         node = node.next;
         return getRecursiveHelper(index, i, node);
+    }
+
+
+    public Iterator<T> iterator() {
+        return new LinkedListDequeIterator();
+    }
+
+    public void printDequeIterator() {
+        Iterator<T> seer = iterator();
+
+        while (seer.hasNext()) {
+            System.out.println(seer.next());
+        }
+    }
+    public class LinkedListDequeIterator implements Iterator<T> {
+        private Node wizPos;
+
+        public LinkedListDequeIterator() {
+            wizPos = sentinel;
+        }
+
+        public boolean hasNext() {
+            return wizPos.next.item != null;
+        }
+
+        public T next() {
+            wizPos = wizPos.next;
+            T returnItem = wizPos.item;
+            return returnItem;
+        }
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+
+        if (!(o instanceof LinkedListDeque)) {
+            return false;
+        }
+
+        LinkedListDeque<T> other = (LinkedListDeque<T>) o;
+        if (this.size != other.size) {
+            return false;
+        }
+
+        for (int i = 0; i < size; i++) {
+            if (!(other.get(i).equals(this.get(i)))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static void main(String[] args) {
+        LinkedListDeque<Integer> LinkedListDeque = new LinkedListDeque<>();
+        LinkedListDeque.addFirst(5);
+        LinkedListDeque.addLast(23);
+        LinkedListDeque.addFirst(42);
+        LinkedListDeque.addLast(7);
+
+
+        //* toString
+        System.out.println(LinkedListDeque);
+
+        LinkedListDeque.printDeque();
+
+        LinkedListDeque.printDequeIterator();
+
+        //equals
+        LinkedListDeque<Integer> LinkedListDeque2 = new LinkedListDeque<>();
+        LinkedListDeque2.addFirst(5);
+        LinkedListDeque2.addLast(23);
+        LinkedListDeque2.addFirst(42);
+        LinkedListDeque2.addLast(7);
+
+        System.out.println(LinkedListDeque.equals(LinkedListDeque2));
+        System.out.println(LinkedListDeque.equals(null));
+        System.out.println(LinkedListDeque.equals("fish"));
+        System.out.println(LinkedListDeque2.equals(LinkedListDeque2));
+
     }
 }
