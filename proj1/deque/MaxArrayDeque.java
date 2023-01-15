@@ -30,7 +30,7 @@ public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
 
         Item maxItem = this.get(0);
         for (int i = 1; i < this.size(); i++) {
-            if (cmp.compare(this.get(i), maxItem) > 0) {
+            if (c.compare(this.get(i), maxItem) > 0) {
                 maxItem = this.get(i);
             }
         }
@@ -38,31 +38,44 @@ public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
     }
 
     public static void main(String[] args) {
-        ArrayDeque<Integer> arrayDeque = new ArrayDeque<>();
-        arrayDeque.addFirst(5);
-        arrayDeque.addLast(23);
-        arrayDeque.addFirst(42);
-        arrayDeque.addLast(7);
+        Comparator<Integer> cmp = new Comparator<>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                if (o1 > o2) {
+                    return 1;
+                } else if (o1 < o2) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        };
 
+        MaxArrayDeque mad1 = new MaxArrayDeque(cmp);
 
-        //* toString
-        System.out.println(arrayDeque);
+        int n = 99;
 
-        arrayDeque.printDeque();
+        for (int i = n; i >= 0; i--) {
+            mad1.addFirst(i);
+        }
 
-        arrayDeque.printDequeIterator();
+        System.out.println(mad1.max());
+        System.out.println(mad1.max(cmp));
 
-        //equals
-        ArrayDeque<Integer> arrayDeque2 = new ArrayDeque<>();
-        arrayDeque2.addFirst(5);
-        arrayDeque2.addLast(23);
-        arrayDeque2.addFirst(42);
-        arrayDeque2.addLast(7);
+        Comparator<String> cmp2 = new Comparator<>() {
+            @Override
+            public int compare(String strA, String strB) {
+                return strA.compareTo(strB);
+            }
+        };
 
-        System.out.println(arrayDeque.equals(arrayDeque2));
-        System.out.println(arrayDeque.equals(null));
-        System.out.println(arrayDeque.equals("fish"));
-        System.out.println(arrayDeque.equals(arrayDeque));
+        MaxArrayDeque mad2 = new MaxArrayDeque(cmp2);
 
+        mad2.addFirst("front");
+        mad2.addLast("middle");
+        mad2.addLast("back");
+
+        System.out.println(mad2.max());
+        System.out.println(mad2.max(cmp2));
     }
 }
