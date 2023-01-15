@@ -9,7 +9,7 @@ public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
         cmp = c;
     }
 
-    public Item max(){
+    public Item max() {
         if (isEmpty()) {
             return null;
         }
@@ -23,7 +23,7 @@ public class MaxArrayDeque<Item> extends ArrayDeque<Item> {
         return maxItem;
     }
 
-    public Item max(Comparator<Item> c){
+    public Item max(Comparator<Item> c) {
         if (isEmpty()) {
             return null;
         }

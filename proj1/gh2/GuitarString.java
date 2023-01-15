@@ -52,9 +52,9 @@ public class GuitarString extends ArrayDeque implements Deque {
         // ** Dequeue the front sample and enqueue a new sample that is
         //       the average of the two multiplied by the DECAY factor.
         //       **Do not call StdAudio.play().**
-            double newDouble = (buffer.get(0) + buffer.get(1)) * 0.5 * DECAY;
-            buffer.removeFirst();
-            buffer.addLast(newDouble);
+        double newDouble = (buffer.get(0) + buffer.get(1)) * 0.5 * DECAY;
+        buffer.removeFirst();
+        buffer.addLast(newDouble);
     }
 
     /* Return the double at the front of the buffer. */

@@ -8,7 +8,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         private T item;
         private Node next;
 
-        private Node(Node p, T i, Node n){
+        private Node(Node p, T i, Node n) {
             prev = p;
             item = i;
             next = n;
@@ -37,7 +37,7 @@ public class LinkedListDeque<T> implements Deque<T> {
         size++;
     }
 
-    public int size(){
+    public int size() {
         return size;
     }
 
@@ -168,30 +168,30 @@ public class LinkedListDeque<T> implements Deque<T> {
     }
 
     public static void main(String[] args) {
-        LinkedListDeque<Integer> LinkedListDeque = new LinkedListDeque<>();
-        LinkedListDeque.addFirst(5);
-        LinkedListDeque.addLast(23);
-        LinkedListDeque.addFirst(42);
-        LinkedListDeque.addLast(7);
+        LinkedListDeque<Integer> linkedListDeque = new LinkedListDeque<>();
+        linkedListDeque.addFirst(5);
+        linkedListDeque.addLast(23);
+        linkedListDeque.addFirst(42);
+        linkedListDeque.addLast(7);
 
 
         //* toString
-        System.out.println(LinkedListDeque);
+        System.out.println(linkedListDeque);
 
-        LinkedListDeque.printDeque();
+        linkedListDeque.printDeque();
 
-        LinkedListDeque.printDequeIterator();
+        linkedListDeque.printDequeIterator();
 
         //equals
-        LinkedListDeque<Integer> LinkedListDeque2 = new LinkedListDeque<>();
-        LinkedListDeque2.addFirst(5);
-        LinkedListDeque2.addLast(23);
-        LinkedListDeque2.addFirst(42);
-        LinkedListDeque2.addLast(7);
+        LinkedListDeque<Integer> linkedListDeque2 = new LinkedListDeque<>();
+        linkedListDeque2.addFirst(5);
+        linkedListDeque2.addLast(23);
+        linkedListDeque2.addFirst(42);
+        linkedListDeque2.addLast(7);
 
-        System.out.println(LinkedListDeque.equals(LinkedListDeque2));
-        System.out.println(LinkedListDeque.equals(null));
-        System.out.println(LinkedListDeque.equals("fish"));
-        System.out.println(LinkedListDeque2.equals(LinkedListDeque2));
+        System.out.println(linkedListDeque.equals(linkedListDeque2));
+        System.out.println(linkedListDeque.equals(null));
+        System.out.println(linkedListDeque.equals("fish"));
+        System.out.println(linkedListDeque.equals(linkedListDeque2));
     }
 }
