@@ -32,7 +32,26 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (key == null) {
             throw new IllegalArgumentException("Need to include the key");
         }
-        return get(key) != null;
+        return find(key, root) != null;
+    }
+
+    private Node find(K key, Node node) {
+        if (key == null) {
+            throw new IllegalArgumentException("Need to include the key");
+        }
+        // if the node is null, return null
+        if (node == null) {
+            return null;
+        }
+
+        // keep searching if node is not null
+        int cmp = key.compareTo(node.key);
+        if (cmp > 0) {
+            return find(key, node.right);
+        } else if (cmp < 0) {
+            return find(key, node.left);
+        }
+        return node;
     }
 
     @Override
@@ -76,10 +95,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     public void put(K key, V value) {
         if (key == null) {
             throw new IllegalArgumentException("Need to include the key");
-        }
-        //
-        if (value == null) {
-            return;
         }
 
         root = put(key, value, root);
