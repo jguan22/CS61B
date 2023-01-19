@@ -24,7 +24,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     @Override
     public void clear() {
         root = null;
-        root.size = 0;
     }
 
     // search the key from the root
@@ -35,9 +34,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
         return get(key) != null;
     }
-
-    // compare the key to the key of the node
-
 
     @Override
     public V get(K key) {
@@ -70,6 +66,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     private int size(Node node) {
+        if (node == null) {
+            return 0;
+        }
         return node.size;
     }
 
@@ -95,9 +94,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         // find the node and put value in
         int cmp = key.compareTo(node.key);
         if (cmp > 0) {
-            return put(key, value, node.right);
+            node.right = put(key, value, node.right);
         } else if (cmp < 0) {
-            return put(key, value, node.left);
+            node.left = put(key, value, node.left);
         } else {
             node.value = value;
         }
@@ -163,10 +162,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     // find the min descendant and return the key
-    public K min() {
-        return min(root).key;
-    }
-
     private Node min(Node node) {
         if (node.left == null) {
             return node;
