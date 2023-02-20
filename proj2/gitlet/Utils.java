@@ -236,4 +236,42 @@ class Utils {
         System.out.printf(msg, args);
         System.out.println();
     }
+
+    static void exitWithError(String msg) {
+        System.out.println(msg);
+        System.exit(0);
+    }
+    /* Check the number of the input command is correct */
+    static void validateNumberArgs(String[] args, int number) {
+        if (args.length != number) {
+            exitWithError("Incorrect operands.");
+        }
+    }
+
+    /* Generate the file path from sha1 ID */
+    static File getObjFile(String id) {
+        String directoryName = getDirectoryName(id);
+        String fileName = getFileName(id);
+        return join(Repository.OBJECTS_DIR, directoryName, fileName);
+    }
+
+    /* Use the first two digits of the sha1 ID as the name of the directory */
+    static String getDirectoryName(String id) {
+        return id.substring(0, 2);
+    }
+
+    /* Use the rest of the digits of the sha1 ID as the name of the file */
+    static String getFileName(String id) {
+        return id.substring(2);
+    }
+
+    /* Save the obj to the folder */
+    static void saveObj(File file, Serializable obj) {
+        File directory = file.getParentFile();
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        writeObject(file, obj);
+    }
+
 }
