@@ -122,7 +122,7 @@ public class Repository {
          * then remove it from stage if it is already there
          * if false, then do nothing
          */
-        if (checkCurrentCommit(filename,blobID)) {
+        if (checkCurrentCommit(filename, blobID)) {
             if (checkRemoved(filename, stage)) {
                 stage.getRemoved().remove(filename);
             }
@@ -131,6 +131,7 @@ public class Repository {
             }
         } else if (!checkAdded(filename, blobID, stage)) {
             stage.getAdded().put(filename, blobID);
+            blob.save();
         }
         stage.save();
     }
@@ -283,16 +284,59 @@ public class Repository {
 
     /* The checkout command for the filename */
     public void checkoutFilename(String filename) {
+        Commit current = getCurrentCommit();
+        checkFilename(current, filename);
+        pullFileToCWD(current, filename);
+    }
 
+    /* help checking if the commit contains this file */
+    private void checkFilename(Commit commit, String filename) {
+        if (!commit.getBlobs().containsKey(filename)) {
+            exitWithError("File does not exist in that commit.");
+        }
+    }
+
+    /* Pull the file into the CWD */
+    private void pullFileToCWD(Commit commit, String filename) {
+        if (Utils.join(CWD, filename).exists()) {
+            Utils.restrictedDelete(Utils.join(CWD, filename));
+        }
+
+        File file = Utils.join(CWD, filename);
+        String fileID = commit.getBlobs().get(filename);
+        Blob blob = new Blob(filename, getObjFile(fileID));
+        writeObject(file, blob);
     }
 
     /* The checkout command for the commit */
     public void checkoutCommit(String commitID, String filename) {
+        checkCommitID(commitID);
+        Commit thisCommit = readObject(getObjFile(commitID), Commit.class);
+        checkFilename(thisCommit, filename);
+        pullFileToCWD(thisCommit, filename);
+    }
+
+    /* Help checking if the commit ID exists */
+    private void checkCommitID(String id) {
+        if (!getObjFile(id).exists()) {
+            exitWithError("No commit with that id exists.");
+        }
+    }
+
+    /* The checkout command for the branch name */
+    public void checkoutBranchName(String branchName) {
+        checkBranch(branchName);
+        if (getCurrentBranch().equals(branchName)) {
+            exitWithError("No need to checkout the current branch.");
+        }
 
     }
-    /* The checkout command for the branch name */
-    public void checkoutBranchName(String BranchName) {
 
+    /* Help checking if the branch exists */
+    private void checkBranch(String branchName) {
+        if (!getBranchHeadFile(branchName).exists()) {
+            exitWithError("No such branch exists.");
+        }
     }
 
     /* The branch command */
@@ -323,5 +367,15 @@ public class Repository {
 
         /* delete the branch */
         branchToRemove.delete();
+    }
+
+    /* The reset command */
+    public void reset() {
+
+    }
+
+    /* The merge command */
+    public void merge() {
+
     }
 }

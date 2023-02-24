@@ -22,6 +22,11 @@ public class Commit implements Serializable {
     private Date date;
     private String time;
     private ArrayList<String> parents;
+
+    /* The map of the added files
+     * the filename as the key
+     * the sha1 ID as the value
+     */
     private Map<String, String> blobs;
     private String sha1ID;
 
