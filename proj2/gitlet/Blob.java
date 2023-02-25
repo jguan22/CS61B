@@ -27,6 +27,17 @@ public class Blob implements Serializable {
         return Utils.sha1(filename, content);
     }
 
+    /* Get the filename of the blob */
+    public String getFilename() {
+        return filename;
+    }
+
+    /* Get the content of the blob */
+
+    public byte[] getContent() {
+        return content;
+    }
+
     /* Get the Blob file */
     public File getFile() {
         return Utils.getObjFile(getID());

@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static gitlet.Utils.*;
@@ -330,12 +331,68 @@ public class Repository {
             exitWithError("No need to checkout the current branch.");
         }
 
+        Commit newCommit = readObject(getBranchHeadFile(branchName), Commit.class);
+        checkCWD(newCommit);
+        for (File f : CWD.listFiles()) {
+            if (!restrictedDelete(f)) {
+                exitWithError("Cannot delete the file: " + f.getName());
+            }
+        }
+        clearStage();
+        copyBlobs(newCommit);
+        setHEAD(branchName);
     }
 
     /* Help checking if the branch exists */
     private void checkBranch(String branchName) {
         if (!getBranchHeadFile(branchName).exists()) {
             exitWithError("No such branch exists.");
+        }
+    }
+
+    /* Help checking if any untracked files */
+    private void checkCWD(Commit newCommit) {
+        List<String> fileList = Utils.plainFilenamesIn(CWD);
+        List<String> untrackedFiles = new ArrayList<>();
+
+        /* check the current commit and stage */
+        Map<String, String> currentBlobs = getCurrentCommit().getBlobs();
+        StagingArea stage = StagingArea.fromFile();
+        for (String filename : fileList) {
+            if (currentBlobs.containsKey(filename)) {
+                if (stage.getRemoved().contains(filename)) {
+                    untrackedFiles.add(filename);
+                }
+            } else if (!stage.getAdded().containsKey(filename)) {
+                untrackedFiles.add(filename);
+            }
+        }
+
+        /* compare to the new commit */
+        Map<String, String> newBlobs = newCommit.getBlobs();
+        for (String filename : untrackedFiles) {
+            if (!newBlobs.containsKey(filename)) {
+                exitWithError("There is an untracked file in the way; " +
+                        "delete it, or add and commit it first.");
+            }
+        }
+    }
+
+    /* Clear the staging area */
+    private void clearStage() {
+        StagingArea stage = StagingArea.fromFile();
+        if (!stage.isClean()) {
+            stage.clean();
+        }
+    }
+
+    /* Copy all the files from the commit */
+    private void copyBlobs(Commit commit) {
+        Map<String, String> blobs = commit.getBlobs();
+        for (String sha1 : blobs.values()) {
+            Blob blob = readObject(getObjFile(sha1), Blob.class);
+            File file = join(blob.getFilename());
+            writeContents(file, blob.getContent());
         }
     }
 
