@@ -259,13 +259,56 @@ public class Repository {
 
     /* The global-log command */
     public void globalLog() {
+        List<String> allCommits = findAllCommits();
+        for (String commitID : allCommits) {
+            Commit thisCommit = readObject(getObjFile(commitID), Commit.class);
+            printCommit(thisCommit);
 
+        }
+    }
 
+    /* Find all commits */
+    private List<String> findAllCommits() {
+        List<String> commits = new ArrayList<>();
+        for (String branch : plainFilenamesIn(BRANCH_HEADS_DIR)) {
+            Commit commit = readObject(getBranchHeadFile(branch), Commit.class);
+            do {
+                if (!commits.contains(commit.getSha1ID())) {
+                    commits.add(commit.getSha1ID());
+                }
+                commit = commit.getParent(0);
+            } while (commit.getParents() != null);
+        }
+        return commits;
+    }
+
+    /* print the commit */
+    private void printCommit(Commit commit) {
+        System.out.println("===");
+        System.out.println("Commit " + commit.getSha1ID());
+        System.out.println("Date:" + commit.getTime());
+        System.out.println(commit.getMessage());
+        System.out.println();
     }
 
     /* The find command */
-    public void find() {
+    public void find(String msg) {
+        List<String> allCommits = findAllCommits();
+        List<Commit> commits = new ArrayList<>();
+        for (String commitID : allCommits) {
+            Commit thisCommit = readObject(getObjFile(commitID), Commit.class);
+            if (thisCommit.getMessage().equals(msg)) {
+                commits.add(thisCommit);
+            }
+        }
 
+        if (commits.isEmpty()) {
+            exitWithError("Found no commit with that message.");
+        } else {
+            for (Commit commit : commits) {
+                printCommit(commit);
+            }
+        }
     }
 
     /* The status command */

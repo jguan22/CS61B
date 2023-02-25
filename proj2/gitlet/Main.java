@@ -50,7 +50,7 @@ public class Main {
                 break;
             case "find":
                 validateNumberArgs(args, 2);
-                repo.find();
+                repo.find(args[1]);
                 break;
             case "status":
                 validateNumberArgs(args, 1);
