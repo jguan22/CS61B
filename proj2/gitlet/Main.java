@@ -87,7 +87,7 @@ public class Main {
                 break;
             case "reset":
                 validateNumberArgs(args, 2);
-                repo.reset();
+                repo.reset(args[1]);
                 break;
             case "merge":
                 validateNumberArgs(args, 2);

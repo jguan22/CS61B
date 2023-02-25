@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static gitlet.Utils.*;
 
@@ -269,18 +270,39 @@ public class Repository {
 
     /* The status command */
     public void status() {
-
         System.out.println("=== Branches ===");
+        for (String branchNames : plainFilenamesIn(BRANCH_HEADS_DIR)) {
+            if (getCurrentBranch().equals(branchNames)) {
+                System.out.println("*" + branchNames);
+            } else {
+                System.out.println(branchNames);
+            }
+        }
 
         System.out.println("=== Staged Files ===");
+        Map<String, String> added = StagingArea.fromFile().getAdded();
+        for (String name : added.keySet()) {
+            System.out.println(name);
+        }
 
         System.out.println("=== Removed Files ===");
+        Set<String> removed = StagingArea.fromFile().getRemoved();
+        for (String name : removed) {
+            System.out.println(name);
+        }
 
         System.out.println("=== Modifications Not Staged For Commit ===");
 
-        System.out.println("=== Staged Files ===");
-
         System.out.println("=== Untracked Files ===");
+    }
+
+    /* Find the names of all branches */
+    private List<String> findBranches() {
+        List<String> branchNames = new ArrayList<>();
+        for (String b : plainFilenamesIn(BRANCH_HEADS_DIR)) {
+
+        }
+        return branchNames;
     }
 
     /* The checkout command for the filename */
@@ -427,8 +449,18 @@ public class Repository {
     }
 
     /* The reset command */
-    public void reset() {
-
+    public void reset(String commitID) {
+        checkCommitID(commitID);
+        Commit newCommit = readObject(getObjFile(commitID), Commit.class);
+        checkCWD(newCommit);
+        for (File f : CWD.listFiles()) {
+            if (!restrictedDelete(f)) {
+                exitWithError("Cannot delete the file: " + f.getName());
+            }
+        }
+        clearStage();
+        copyBlobs(newCommit);
+        updateBranchHead(getCurrentBranch(), newCommit.getSha1ID());
     }
 
     /* The merge command */
