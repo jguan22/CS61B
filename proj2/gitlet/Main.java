@@ -91,7 +91,7 @@ public class Main {
                 break;
             case "merge":
                 validateNumberArgs(args, 2);
-                repo.merge();
+                repo.merge(args[1]);
                 break;
 
             default:

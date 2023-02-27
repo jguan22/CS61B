@@ -1,10 +1,8 @@
 package gitlet;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.PriorityQueue;
 
 import static gitlet.Utils.*;
 
@@ -68,6 +66,7 @@ public class Repository {
         GITLET_DIR.mkdir();
         OBJECTS_DIR.mkdir();
         REFS_DIR.mkdir();
+        BRANCH_HEADS_DIR.mkdir();
         HEAD.mkdir();
         STAGE.mkdir();
     }
@@ -339,15 +338,6 @@ public class Repository {
         System.out.println("=== Untracked Files ===");
     }
 
-    /* Find the names of all branches */
-    private List<String> findBranches() {
-        List<String> branchNames = new ArrayList<>();
-        for (String b : plainFilenamesIn(BRANCH_HEADS_DIR)) {
-
-        }
-        return branchNames;
-    }
-
     /* The checkout command for the filename */
     public void checkoutFilename(String filename) {
         Commit current = getCurrentCommit();
@@ -463,31 +453,32 @@ public class Repository {
 
     /* The branch command */
     public void branch(String branchName) {
-        /* Check if this branch already exists */
-        File branch = getBranchHeadFile(branchName);
-        if (branch.exists()) {
-            exitWithError("A branch with that name already exist.");
-        }
+        checkBranchName(branchName);
 
         /* update the branch to the current commit */
         Commit current = getCurrentCommit();
         updateBranchHead(branchName, current.getSha1ID());
     }
 
-    /* The branch command */
-    public void rmBranch(String branchName) {
-        /* Check if this branch exists */
-        File branchToRemove = getBranchHeadFile(branchName);
-        if (!branchToRemove.exists()) {
+    /* Check if the branch exists */
+    private void checkBranchName(String branchName) {
+        File branch = getBranchHeadFile(branchName);
+        if (!branch.exists()) {
             exitWithError("A branch with that name does not exist.");
         }
+    }
+
+    /* The branch command */
+    public void rmBranch(String branchName) {
+        checkBranchName(branchName);
 
         /* Check if this branch is currently occupied */
         if (branchName.equals(getCurrentBranch())) {
-            exitWithError("Cannot remove the current bran");
+            exitWithError("Cannot remove the current branch.");
         }
 
         /* delete the branch */
+        File branchToRemove = getBranchHeadFile(branchName);
         branchToRemove.delete();
     }
 
@@ -507,7 +498,171 @@ public class Repository {
     }
 
     /* The merge command */
-    public void merge() {
+    public void merge(String branchName) {
+        checkStage();
+        checkBranchName(branchName);
+        String currentBranch = getCurrentBranch();
+        if (currentBranch.equals(branchName)) {
+            exitWithError("Cannot merge a branch with itself.");
+        }
 
+        Commit branchHeadCommit = readObject(getBranchHeadFile(branchName), Commit.class);
+        Commit currentCommit = readObject(getBranchHeadFile(currentBranch) , Commit.class);
+        checkCWD(branchHeadCommit);
+
+        Commit splitPoint = getLastCommonAncestor(branchHeadCommit, currentCommit);
+
+        /*  The branch is the child of the current */
+        if (splitPoint.getSha1ID().equals(currentCommit.getSha1ID())) {
+            checkoutBranchName(branchName);
+            System.out.println("Current branch fast-forwarded.");
+            return;
+        }
+
+        /* The current is the child of the branch */
+        if (splitPoint.getSha1ID().equals(branchHeadCommit.getSha1ID())) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            return;
+        }
+
+        /* Merge the heads of these two branches */
+        Map<String, String> blobs = mergeIntoNewCommit(splitPoint, currentCommit, branchHeadCommit);
+        ArrayList<String> parents = new ArrayList<>();
+        parents.add(getCurrentBranch());
+        parents.add(branchName);
+        String msg = "Merge" + " " + branchName + " " + "into" + " " + getCurrentBranch() + ".";
+        Commit newCommit = new Commit(msg, parents, blobs);
+        newCommit.save();
+    }
+
+    /* help merging the input commits */
+    private Map<String, String> mergeIntoNewCommit(Commit splitPoint, Commit currentCommit, Commit mergeCommit) {
+        List<String> allFiles = getAllMergeFiles(splitPoint, currentCommit, mergeCommit);
+        Map<String, String> splitBlobs = splitPoint.getBlobs();
+        Map<String, String> currentBlobs = currentCommit.getBlobs();
+        Map<String, String> mergeCommitBlobs = mergeCommit.getBlobs();
+
+        /* All possible merge cases table
+                  split   HEAD   other   result
+         *case 1    A      A      !A       !A    Modified in other but not in HEAD
+          case 2    B     !B       B       !B    Modified in HEAD but not in other
+          case 3-1  C     !C      !C       !C    Same modification in both
+         *case 3-2  D     !D      !D    conflict Different modification in other and HEAD
+          case 4    X      E       X        E    Not in split and other but in HEAD
+         *case 5    X      X      !F       !F    Not in split and HEAD but in other
+         *case 6    G      G       X        X    Unmodified in HEAD but removed in other
+          case 7    H      X       H        X    Unmodified in other but removed in HEAD
+
+         case 1, 5: change to other
+         case 6: remove
+         case 2, 3-1, 4, 7: remain unchanged
+         case 3-2: solve conflict
+         */
+
+        List<String> listToAdd = new ArrayList<>();    /* case 5 */
+        List<String> listToChange = new ArrayList<>(); /* case 1 */
+        List<String> listToRemove = new ArrayList<>(); /* case 6 */
+        List<String> listToMerge = new ArrayList<>();  /* case 3-2 */
+
+        for (String filename : allFiles) {
+            if (mergeCommitBlobs.containsKey(filename)) {
+                /* case 5 */
+                if (!currentBlobs.containsKey(filename) && !splitBlobs.containsKey(filename)) {
+                    listToAdd.add(filename);
+                } else if (currentBlobs.containsKey(filename) && splitBlobs.containsKey(filename)) {
+                    /* case 1 */
+                    if (currentBlobs.get(filename).equals(splitBlobs.get(filename))) {
+                        listToChange.add(filename);
+                    } else if (!mergeCommitBlobs.get(filename).equals(splitBlobs.get(filename))
+                            && !mergeCommitBlobs.get(filename).equals(currentBlobs.get(filename))) {
+                        /* case 3-2 */
+                        listToMerge.add(filename);
+                    }
+                }
+            } else if (currentBlobs.containsKey(filename) && splitBlobs.containsKey(filename)){
+                if (currentBlobs.get(filename).equals(splitBlobs.get(filename))){
+                    /* case 6 */
+                    listToRemove.add(filename);
+                }
+            }
+        }
+
+        if (!listToAdd.isEmpty()) {
+            for (String f : listToAdd) {
+                String thisValue = mergeCommitBlobs.get(f);
+                currentBlobs.put(f, thisValue);
+            }
+        }
+
+        if (!listToRemove.isEmpty()) {
+            for (String f : listToRemove) {
+                String thisValue = currentBlobs.get(f);
+                currentBlobs.remove(f, thisValue);
+            }
+        }
+
+        if (!listToChange.isEmpty()) {
+            for (String f : listToChange) {
+                String thisValue =mergeCommitBlobs.get(f);
+                currentBlobs.replace(f, thisValue);
+            }
+        }
+
+        if (!listToMerge.isEmpty()) {
+            System.out.println("Encountered a merge conflict.");
+            for (String f : listToMerge) {
+                Blob conflictBlobInCurrent = readObject(getObjFile(currentBlobs.get(f)), Blob.class);
+                String conflictContentInCurrent = conflictBlobInCurrent.getContent().toString();
+                Blob conflictBlobInMerge = readObject(getObjFile(mergeCommitBlobs.get(f)), Blob.class);
+                String conflictContentInMerge = conflictBlobInMerge.getContent().toString();
+                String conflictContents = "<<<<<<< HEAD\n" + conflictContentInCurrent
+                        + "=======\n" + conflictContentInMerge + ">>>>>>>\n";
+                File conflictFile = join(CWD, f);
+                writeContents(conflictFile, conflictContents);
+                Blob newBlob = new Blob(f, conflictFile);
+                newBlob.save();
+                currentBlobs.put(f, newBlob.getID());
+            }
+        }
+
+        return currentBlobs;
+    }
+
+    /* Get all the files from the commits */
+    private List<String> getAllMergeFiles(Commit splitPoint, Commit current, Commit mergeCommit) {
+        Set<String> all = new HashSet<>(splitPoint.getBlobs().keySet());
+        all.addAll(current.getBlobs().keySet());
+        all.addAll(mergeCommit.getBlobs().keySet());
+        List<String> allFiles = new ArrayList<>();
+        allFiles.addAll(all);
+        return allFiles;
+    }
+
+
+    /* check the staging area if it has any uncommitted change */
+    private void checkStage() {
+        StagingArea stage = StagingArea.fromFile();
+        if (!stage.isClean()) {
+            exitWithError("You have uncommitted changes.");
+        }
+    }
+
+    /* get the latest common ancestor */
+    private Commit getLastCommonAncestor(Commit a, Commit b) {
+        Comparator<Commit> commitComparator = Comparator.comparing(Commit::getTime).reversed();
+        PriorityQueue<Commit> commitToCheck = new PriorityQueue<>(commitComparator);
+        commitToCheck.add(a);
+        commitToCheck.add(b);
+        Set<String> candidates = new HashSet<>();
+        while (true) {
+            Commit thisCommit = commitToCheck.poll();
+            String parentID = thisCommit.getParents().get(0);
+            Commit parent = thisCommit.getParent(0);
+            if (candidates.contains(parentID)) {
+                return parent;
+            }
+            commitToCheck.add(parent);
+            candidates.add(parentID);
+        }
     }
 }

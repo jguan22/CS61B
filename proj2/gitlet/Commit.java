@@ -72,7 +72,7 @@ public class Commit implements Serializable {
         return sha1ID;
     }
 
-    /* get the date of the commit */
+    /* get the time of the commit */
     public String getTime() {
         return time;
     }
